@@ -157,9 +157,3 @@ export default function NewRequestPage() {
     </div>
   )
 }
-         </form>
-        </div>
-      </div>
-    </div>
-  )
-}
