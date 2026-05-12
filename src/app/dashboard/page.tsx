@@ -33,7 +33,6 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchRequests()
 
-    // Real-time subscription
     const channel = supabase
       .channel('blood_requests_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'blood_requests' }, () => {
@@ -50,7 +49,8 @@ export default function DashboardPage() {
     const { data, error } = await supabase
       .from('blood_requests')
       .select('*')
-      .order('priority', { ascending: false }) // Idealmente ter uma ordem customizada
+      .neq('status', 'FULFILLED')
+      .order('priority', { ascending: false })
       .order('created_at', { ascending: false })
 
     if (!error && data) setRequests(data)
@@ -59,7 +59,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
-      {/* Header Estilo Centro de Operações */}
       <div className="flex flex-col md:flex-row justify-between items-center border-b border-zinc-800 pb-6 mb-8">
         <div>
           <h1 className="text-3xl font-black tracking-tighter flex items-center gap-2">
@@ -75,13 +74,9 @@ export default function DashboardPage() {
           >
             + NOVO PEDIDO CRÍTICO
           </Link>
-          <button className="border border-zinc-700 hover:bg-zinc-900 px-6 py-2 rounded-md font-bold text-sm transition-all">
-            FILTRAR MAPA
-          </button>
         </div>
       </div>
 
-      {/* Grid de Estatísticas Rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Pedidos Ativos', val: requests.length, color: 'text-red-500', icon: Droplet },
@@ -99,7 +94,6 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Main Content: Lista de Pedidos (Estilo Uber/Bolt) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-zinc-400 text-xs font-black uppercase mb-4 tracking-widest">Fluxo de Necessidades Ativas</h2>
@@ -133,10 +127,15 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 text-zinc-500 text-xs mt-2 uppercase font-mono">
                         <MapPin size={12} />
                         <span>
-                          {location && req.latitude && req.longitude 
-                            ? `~${calculateDistance(location.lat, location.lng, req.latitude, req.longitude).toFixed(1)}km de distância`
+                          {userCoords && req.latitude && req.longitude 
+                            ? `~${calculateDistance(userCoords.lat, userCoords.lng, req.latitude, req.longitude).toFixed(1)}km de distância`
                             : 'Luanda • Localização aproximada'}
                         </span>
+                        {userCoords && req.latitude && req.longitude && (
+                          <span className="text-[10px] text-zinc-600 bg-zinc-800 px-1 rounded ml-2">
+                             {calculateDistance(userCoords.lat, userCoords.lng, req.latitude, req.longitude) < 5 ? '🔥 MUITO PRÓXIMO' : ''}
+                          </span>
+                        )}
                       </div>
                       <p className="text-zinc-400 text-sm mt-3 line-clamp-1">{req.description}</p>
                     </div>
@@ -181,34 +180,20 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Sidebar: Mapa Fake / Insights */}
         <div className="space-y-6">
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden aspect-square relative">
             <div className="absolute inset-0 bg-[url('https://api.dicebear.com/7.x/identicon/svg?seed=map')] opacity-10 bg-cover" />
             <div className="absolute inset-0 flex items-center justify-center flex-col p-8 text-center">
               <MapPin size={40} className="text-red-600 mb-4 animate-bounce" />
               <h4 className="font-bold uppercase tracking-tight">Mapa Nacional</h4>
-              <p className="text-zinc-500 text-xs mt-2">Integração de geolocalização em tempo real ativa.</p>
-              <button className="mt-6 text-[10px] font-bold border border-zinc-700 px-4 py-2 rounded uppercase hover:bg-white hover:text-black transition-all">
-                Expandir Visão Operacional
-              </button>
+              <p className="text-zinc-500 text-xs mt-2">Integração de geolocalização ativa.</p>
             </div>
           </div>
           
           <div className="bg-red-600/10 border border-red-900/50 p-6 rounded-xl">
             <h4 className="text-red-500 text-xs font-black uppercase mb-2">Infraestrutura Anti-Fraude</h4>
             <p className="text-zinc-400 text-xs leading-relaxed">
-              Todos os pedidos passam por verificação hospitalar. Pedidos atendidos são removidos em tempo real para manter a rede eficiente.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-e="text-red-500 text-xs font-black uppercase mb-2">Infraestrutura Anti-Fraude</h4>
-            <p className="text-zinc-400 text-xs leading-relaxed">
-              Todos os pedidos passam por verificação hospitalar. Pedidos atendidos são removidos em tempo real para manter a rede eficiente.
+              Todos os pedidos passam por verificação. Pedidos atendidos são removidos em tempo real.
             </p>
           </div>
         </div>

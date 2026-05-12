@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
+import { useGeolocation } from '@/utils/geo'
 
 export default function NewRequestPage() {
   const [bloodType, setBloodType] = useState('')
@@ -12,6 +13,7 @@ export default function NewRequestPage() {
   const [hospitalName, setHospitalName] = useState('')
   const [loading, setLoading] = useState(false)
   
+  const { location: coords } = useGeolocation()
   const router = useRouter()
   const supabase = createClient()
 
@@ -35,8 +37,8 @@ export default function NewRequestPage() {
         description: description,
         hospital_name_manual: hospitalName,
         status: 'PENDING',
-        latitude: location?.lat,
-        longitude: location?.lng
+        latitude: coords?.lat,
+        longitude: coords?.lng
       }
     ])
 
@@ -60,7 +62,6 @@ export default function NewRequestPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            {/* Sistema de Prioridade Real */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-tight">Nível de Prioridade</label>
               <div className="grid grid-cols-3 gap-4">
