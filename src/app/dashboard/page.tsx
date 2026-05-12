@@ -9,7 +9,7 @@ import { useGeolocation, calculateDistance } from '@/utils/geo'
 export default function DashboardPage() {
   const [requests, setRequests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const { location, error: geoError } = useGeolocation()
+  const { location: userCoords, error: geoError } = useGeolocation()
   const supabase = createClient()
 
   const shareOnWhatsApp = (req: any) => {
@@ -197,6 +197,16 @@ export default function DashboardPage() {
           
           <div className="bg-red-600/10 border border-red-900/50 p-6 rounded-xl">
             <h4 className="text-red-500 text-xs font-black uppercase mb-2">Infraestrutura Anti-Fraude</h4>
+            <p className="text-zinc-400 text-xs leading-relaxed">
+              Todos os pedidos passam por verificação hospitalar. Pedidos atendidos são removidos em tempo real para manter a rede eficiente.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+e="text-red-500 text-xs font-black uppercase mb-2">Infraestrutura Anti-Fraude</h4>
             <p className="text-zinc-400 text-xs leading-relaxed">
               Todos os pedidos passam por verificação hospitalar. Pedidos atendidos são removidos em tempo real para manter a rede eficiente.
             </p>
