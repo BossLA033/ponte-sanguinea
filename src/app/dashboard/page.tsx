@@ -114,18 +114,36 @@ export default function DashboardPage() {
                       <h3 className="font-bold text-lg leading-none">{req.hospital_name_manual || 'Hospital Central'}</h3>
                       <div className="flex items-center gap-2 text-zinc-500 text-xs mt-2 uppercase font-mono">
                         <MapPin size={12} />
-                        <span>Luanda • ~5.2km de distância</span>
+                        <span>
+                          {location && req.latitude && req.longitude 
+                            ? `~${calculateDistance(location.lat, location.lng, req.latitude, req.longitude).toFixed(1)}km de distância`
+                            : 'Luanda • Localização aproximada'}
+                        </span>
                       </div>
                       <p className="text-zinc-400 text-sm mt-3 line-clamp-1">{req.description}</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-2">
                     <span className={`text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter ${
                       req.priority === 'CRITICAL' ? 'bg-red-600/20 text-red-500' : 'bg-zinc-800 text-zinc-500'
                     }`}>
                       {req.priority}
                     </span>
-                    <p className="text-zinc-600 text-[10px] mt-2 font-mono">
+                    
+                    <button 
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from('blood_requests')
+                          .update({ status: 'FULFILLED' })
+                          .eq('id', req.id)
+                        if (!error) fetchRequests()
+                      }}
+                      className="text-[9px] font-bold bg-green-600/10 text-green-500 border border-green-600/30 px-2 py-1 rounded hover:bg-green-600 hover:text-white transition-all"
+                    >
+                      MARCAR ATENDIDO
+                    </button>
+                    
+                    <p className="text-zinc-600 text-[10px] mt-1 font-mono">
                       {new Date(req.created_at).toLocaleTimeString()}
                     </p>
                   </div>
@@ -142,7 +160,7 @@ export default function DashboardPage() {
             <div className="absolute inset-0 flex items-center justify-center flex-col p-8 text-center">
               <MapPin size={40} className="text-red-600 mb-4 animate-bounce" />
               <h4 className="font-bold uppercase tracking-tight">Mapa Nacional</h4>
-              <p className="text-zinc-500 text-xs mt-2">Integração de geolocalização em tempo real pendente.</p>
+              <p className="text-zinc-500 text-xs mt-2">Integração de geolocalização em tempo real ativa.</p>
               <button className="mt-6 text-[10px] font-bold border border-zinc-700 px-4 py-2 rounded uppercase hover:bg-white hover:text-black transition-all">
                 Expandir Visão Operacional
               </button>
@@ -150,22 +168,9 @@ export default function DashboardPage() {
           </div>
           
           <div className="bg-red-600/10 border border-red-900/50 p-6 rounded-xl">
-            <h4 className="text-red-500 text-xs font-black uppercase mb-2">Aviso Anti-Fraude</h4>
+            <h4 className="text-red-500 text-xs font-black uppercase mb-2">Infraestrutura Anti-Fraude</h4>
             <p className="text-zinc-400 text-xs leading-relaxed">
-              Todos os pedidos listados acima passam por verificação hospitalar automática. Evite spam para não ser banido da infraestrutura nacional.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-     </div>
-          
-          <div className="bg-red-600/10 border border-red-900/50 p-6 rounded-xl">
-            <h4 className="text-red-500 text-xs font-black uppercase mb-2">Aviso Anti-Fraude</h4>
-            <p className="text-zinc-400 text-xs leading-relaxed">
-              Todos os pedidos listados acima passam por verificação hospitalar automática. Evite spam para não ser banido da infraestrutura nacional.
+              Todos os pedidos passam por verificação hospitalar. Pedidos atendidos são removidos em tempo real para manter a rede eficiente.
             </p>
           </div>
         </div>
