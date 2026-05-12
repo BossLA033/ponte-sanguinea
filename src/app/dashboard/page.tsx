@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { AlertTriangle, MapPin, Activity, Droplet, Navigation } from 'lucide-react'
+import { AlertTriangle, MapPin, Activity, Droplet, Navigation, Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { useGeolocation, calculateDistance } from '@/utils/geo'
 
@@ -11,6 +11,24 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const { location, error: geoError } = useGeolocation()
   const supabase = createClient()
+
+  const shareOnWhatsApp = (req: any) => {
+    const message = `🚨 *PEDIDO DE EMERGÊNCIA - PONTE SANGUÍNEA* 🚨
+
+🩸 *Tipo Sanguíneo:* ${req.blood_type}
+🏥 *Hospital:* ${req.hospital_name_manual}
+⚠️ *Prioridade:* ${req.priority}
+📍 *Localização:* Luanda, Angola
+
+"${req.description || 'Necessidade urgente de doadores.'}"
+
+👉 *Acesse o painel para ajudar:* ${window.location.origin}/dashboard
+
+*Ponte Sanguínea - Infraestrutura Nacional de Emergência*`
+    
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`
+    window.open(url, '_blank')
+  }
 
   useEffect(() => {
     fetchRequests()
@@ -130,18 +148,28 @@ export default function DashboardPage() {
                       {req.priority}
                     </span>
                     
-                    <button 
-                      onClick={async () => {
-                        const { error } = await supabase
-                          .from('blood_requests')
-                          .update({ status: 'FULFILLED' })
-                          .eq('id', req.id)
-                        if (!error) fetchRequests()
-                      }}
-                      className="text-[9px] font-bold bg-green-600/10 text-green-500 border border-green-600/30 px-2 py-1 rounded hover:bg-green-600 hover:text-white transition-all"
-                    >
-                      MARCAR ATENDIDO
-                    </button>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => shareOnWhatsApp(req)}
+                        className="text-[9px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 px-2 py-1 rounded hover:bg-green-600 hover:text-white transition-all flex items-center gap-1"
+                      >
+                        <Share2 size={10} />
+                        PARTILHAR
+                      </button>
+                      
+                      <button 
+                        onClick={async () => {
+                          const { error } = await supabase
+                            .from('blood_requests')
+                            .update({ status: 'FULFILLED' })
+                            .eq('id', req.id)
+                          if (!error) fetchRequests()
+                        }}
+                        className="text-[9px] font-bold bg-green-600/10 text-green-500 border border-green-600/30 px-2 py-1 rounded hover:bg-green-600 hover:text-white transition-all"
+                      >
+                        MARCAR ATENDIDO
+                      </button>
+                    </div>
                     
                     <p className="text-zinc-600 text-[10px] mt-1 font-mono">
                       {new Date(req.created_at).toLocaleTimeString()}
